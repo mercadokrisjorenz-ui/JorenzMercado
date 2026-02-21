@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Business Empire</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#0a0a12;--panel:#12121e;--card:#1a1a2e;--border:#2a2a4a;
+  --gold:#ffd700;--green:#4ade80;--red:#f87171;--blue:#60a5fa;--purple:#a78bfa;
+}
+body{font-family:'Segoe UI',sans-serif;background:var(--bg);color:#e0e0f0;min-height:100vh;overflow-x:hidden;}
+
+/* TOP BAR */
+#topbar{
+  position:sticky;top:0;z-index:100;
+  background:rgba(10,10,18,0.97);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:14px;padding:10px 18px;flex-wrap:wrap;
+}
+#topbar h1{font-size:1.3rem;color:var(--gold);white-space:nowrap;text-shadow:0 0 12px rgba(255,215,0,0.4);}
+.top-stat{display:flex;flex-direction:column;align-items:center;min-width:80px;}
+.top-stat label{font-size:0.6rem;opacity:0.5;text-transform:uppercase;letter-spacing:1px;}
+.top-stat span{font-size:0.95rem;font-weight:700;color:var(--gold);}
+#prestige-btn{
+  margin-left:auto;padding:7px 16px;border-radius:20px;border:none;
+  background:linear-gradient(135deg,#a78bfa,#7c3aed);color:#fff;
+  font-weight:700;cursor:pointer;font-size:0.8rem;transition:all 0.2s;white-space:nowrap;
+}
+#prestige-btn:hover{transform:scale(1.05);box-shadow:0 0 20px rgba(167,139,250,0.5);}
+#prestige-btn:disabled{opacity:0.3;cursor:not-allowed;transform:none;}
+
+/* MODE SWITCHER */
+#mode-bar{
+  display:flex;gap:0;background:var(--panel);border-bottom:1px solid var(--border);
+  position:sticky;top:57px;z-index:99;
+}
+.mode-tab{
+  flex:1;padding:14px;text-align:center;font-weight:700;font-size:1rem;
+  cursor:pointer;border:none;background:none;color:#666;transition:all 0.25s;
+  border-bottom:3px solid transparent;
+}
+.mode-tab:hover{color:#aaa;background:rgba(255,255,255,0.03);}
+.mode-tab.active{color:var(--gold);border-bottom-color:var(--gold);background:rgba(255,215,0,0.05);}
+
+/* CLICK MODE */
+#click-mode{display:none;padding:20px;}
+#click-mode.active{display:grid;grid-template-columns:1fr 320px;gap:20px;}
+
+.click-arena{
+  background:var(--panel);border:1px solid var(--border);border-radius:20px;
+  padding:30px;display:flex;flex-direction:column;align-items:center;gap:20px;
+}
+.click-arena h2{font-size:1.2rem;opacity:0.6;}
+
+#mainClickBtn{
+  width:220px;height:220px;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%, #f093fb, #f5576c);
+  border:5px solid rgba(255,255,255,0.7);
+  font-size:4rem;cursor:pointer;
+  transition:transform 0.08s,box-shadow 0.08s;
+  box-shadow:0 0 50px rgba(240,93,251,0.4),0 15px 40px rgba(0,0,0,0.6);
+  animation:pulsate 2s infinite;position:relative;
+}
+@keyframes pulsate{
+  0%,100%{box-shadow:0 0 40px rgba(240,93,251,0.35),0 15px 40px rgba(0,0,0,0.6);}
+  50%{box-shadow:0 0 70px rgba(240,93,251,0.7),0 15px 40px rgba(0,0,0,0.6);}
+}
+#mainClickBtn:active{transform:scale(0.9);animation:none;}
+
+.click-stats-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;width:100%;}
+.cstat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center;}
+.cstat label{font-size:0.7rem;opacity:0.5;display:block;margin-bottom:4px;text-transform:uppercase;}
+.cstat span{font-size:1.1rem;font-weight:700;color:var(--gold);}
+
+/* Click combo */
+.combo-bar{width:100%;height:10px;background:rgba(255,255,255,0.08);border-radius:10px;overflow:hidden;}
+.combo-fill{height:100%;border-radius:10px;background:linear-gradient(90deg,#f093fb,#f5576c);transition:width 0.2s;width:0%;}
+.combo-label{font-size:0.8rem;color:#f093fb;font-weight:700;}
+
+/* Click upgrades panel */
+.click-upg-panel{
+  background:var(--panel);border:1px solid var(--border);border-radius:20px;padding:18px;
+  overflow-y:auto;max-height:calc(100vh - 160px);
+}
+.click-upg-panel h3{font-size:1rem;margin-bottom:14px;color:#ccc;border-bottom:1px solid var(--border);padding-bottom:8px;}
+.cupg-item{
+  background:var(--card);border:1px solid var(--border);border-radius:12px;
+  padding:12px;margin-bottom:8px;display:flex;gap:10px;align-items:center;
+  cursor:pointer;transition:all 0.2s;
+}
+.cupg-item:hover:not(.bought){border-color:rgba(255,215,0,0.4);background:rgba(255,215,0,0.04);transform:translateX(4px);}
+.cupg-item.bought{opacity:0.35;}
+.cupg-icon{font-size:1.5rem;width:38px;text-align:center;}
+.cupg-info{flex:1;}
+.cupg-name{font-size:0.88rem;font-weight:700;}
+.cupg-desc{font-size:0.73rem;opacity:0.6;margin-top:2px;}
+.cupg-cost{font-size:0.78rem;color:var(--gold);margin-top:4px;font-weight:700;}
+.cupg-badge{font-size:0.7rem;background:rgba(255,215,0,0.15);border:1px solid rgba(255,215,0,0.3);
+  color:var(--gold);border-radius:20px;padding:2px 8px;white-space:nowrap;}
+
+/* BUSINESS MODE */
+#biz-mode{display:none;}
+#biz-mode.active{display:grid;grid-template-columns:200px 1fr 260px;height:calc(100vh - 114px);}
+
+/* Sidebar */
+#biz-sidebar{
+  background:var(--panel);border-right:1px solid var(--border);
+  overflow-y:auto;padding:10px 8px;display:flex;flex-direction:column;gap:3px;
+}
+.nav-btn{
+  display:flex;align-items:center;gap:8px;padding:9px 12px;
+  border-radius:10px;border:none;background:none;color:#888;
+  font-size:0.85rem;cursor:pointer;transition:all 0.2s;width:100%;text-align:left;
+}
+.nav-btn:hover{background:rgba(255,255,255,0.06);color:#fff;}
+.nav-btn.active{background:rgba(255,215,0,0.1);color:var(--gold);border:1px solid rgba(255,215,0,0.2);}
+.nav-icon{font-size:1.1rem;width:24px;text-align:center;}
+
+/* Biz main */
+#biz-main{overflow-y:auto;padding:18px;}
+.page{display:none;}
+.page.active{display:block;}
+.page-title{font-size:1.5rem;font-weight:700;margin-bottom:4px;}
+.page-sub{font-size:0.82rem;opacity:0.45;margin-bottom:18px;}
+
+/* Business cards */
+.biz-grid{display:grid;gap:12px;}
+.biz-card{
+  background:var(--card);border:1px solid var(--border);border-radius:14px;
+  padding:15px;transition:all 0.2s;position:relative;overflow:hidden;
+}
+.biz-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--accent,#555);border-radius:4px 0 0 4px;}
+.biz-card:hover{border-color:rgba(255,255,255,0.12);transform:translateY(-2px);}
+.biz-card.locked{opacity:0.4;filter:grayscale(0.5);}
+
+.biz-top{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.biz-icon{font-size:1.8rem;width:46px;height:46px;display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,0.05);border-radius:12px;}
+.biz-info{flex:1;}
+.biz-name{font-size:0.95rem;font-weight:700;}
+.biz-level{font-size:0.72rem;color:var(--blue);margin-top:2px;}
+.biz-income-text{font-size:0.75rem;color:var(--green);margin-top:2px;}
+.biz-lv-badge{position:absolute;top:10px;right:10px;background:rgba(255,215,0,0.12);
+  border:1px solid rgba(255,215,0,0.25);color:var(--gold);border-radius:20px;padding:2px 9px;font-size:0.7rem;font-weight:700;}
+
+.biz-progress{height:6px;background:rgba(255,255,255,0.07);border-radius:6px;margin-bottom:10px;overflow:hidden;}
+.biz-fill{height:100%;border-radius:6px;transition:width 0.25s;}
+
+.biz-btns{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;}
+.btn{padding:8px 14px;border-radius:8px;border:none;font-weight:700;font-size:0.78rem;cursor:pointer;transition:all 0.2s;}
+.btn-buy{background:linear-gradient(135deg,#11998e,#38ef7d);color:#fff;}
+.btn-buy:hover{box-shadow:0 4px 14px rgba(56,239,125,0.3);transform:scale(1.04);}
+.btn-buy:disabled{background:#222;color:#444;cursor:not-allowed;transform:none;box-shadow:none;}
+.btn-mgr{background:rgba(96,165,250,0.12);border:1px solid rgba(96,165,250,0.25);color:var(--blue);padding:8px 10px;font-size:0.75rem;}
+.btn-mgr.hired{background:rgba(74,222,128,0.1);border-color:rgba(74,222,128,0.25);color:var(--green);}
+.collect-btn{
+  width:42px;height:42px;border-radius:50%;border:2px solid var(--gold);
+  background:rgba(255,215,0,0.08);color:var(--gold);font-size:1rem;
+  cursor:pointer;transition:all 0.15s;display:flex;align-items:center;justify-content:center;
+}
+.collect-btn:hover{background:rgba(255,215,0,0.2);transform:scale(1.1);}
+.collect-btn:active{transform:scale(0.88);}
+.collect-btn.auto{border-color:#4ade80;background:rgba(74,222,128,0.08);color:#4ade80;cursor:default;animation:spin 3s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* Right panel */
+#biz-right{
+  background:var(--panel);border-left:1px solid var(--border);
+  overflow-y:auto;padding:14px;
+}
+.rp-title{font-size:0.68rem;text-transform:uppercase;letter-spacing:1px;opacity:0.35;margin-bottom:8px;margin-top:14px;}
+.rp-title:first-child{margin-top:0;}
+#newsticker{background:rgba(255,215,0,0.06);border:1px solid rgba(255,215,0,0.12);
+  border-radius:10px;padding:8px 10px;font-size:0.75rem;color:#ffdd80;margin-bottom:4px;min-height:36px;line-height:1.4;}
+#minichart{height:70px;background:var(--card);border-radius:10px;padding:6px;display:flex;align-items:flex-end;gap:2px;margin-bottom:4px;}
+.mc-bar{flex:1;border-radius:2px 2px 0 0;min-height:3px;transition:height 0.4s;}
+.ach-item{display:flex;align-items:center;gap:8px;padding:7px 9px;background:var(--card);border-radius:9px;margin-bottom:5px;border:1px solid var(--border);opacity:0.35;transition:all 0.3s;}
+.ach-item.unlocked{opacity:1;border-color:rgba(255,215,0,0.25);background:rgba(255,215,0,0.05);}
+.ach-icon{font-size:1.2rem;}
+.ach-name{font-size:0.78rem;font-weight:700;}
+.ach-desc{font-size:0.68rem;opacity:0.55;}
+
+/* Employees / Stocks / Upgrades / Prestige / Stats shared */
+.emp-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:10px;}
+.emp-avatar{font-size:1.6rem;width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.04);border-radius:50%;}
+.emp-info{flex:1;}
+.emp-name{font-size:0.85rem;font-weight:700;}
+.emp-role{font-size:0.7rem;opacity:0.45;}
+.emp-boost{font-size:0.72rem;color:var(--green);margin-top:2px;}
+.emp-hire{padding:6px 12px;border-radius:20px;border:1px solid var(--green);background:rgba(74,222,128,0.08);color:var(--green);cursor:pointer;font-size:0.75rem;font-weight:700;transition:all 0.2s;}
+.emp-hire:hover{background:rgba(74,222,128,0.18);}
+.emp-hire.hired{border-color:#444;color:#444;cursor:default;background:none;}
+
+.upg-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.upg-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:13px;cursor:pointer;transition:all 0.2s;}
+.upg-card:hover:not(.bought){border-color:rgba(255,215,0,0.3);background:rgba(255,215,0,0.04);}
+.upg-card.bought{opacity:0.35;border-color:var(--green);}
+.upg-card-icon{font-size:1.5rem;margin-bottom:6px;}
+.upg-card-name{font-size:0.85rem;font-weight:700;margin-bottom:3px;}
+.upg-card-desc{font-size:0.72rem;opacity:0.55;margin-bottom:7px;line-height:1.4;}
+.upg-card-cost{font-size:0.78rem;color:var(--gold);font-weight:700;}
+
+.stock-row{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--card);border-radius:10px;margin-bottom:6px;border:1px solid var(--border);}
+.stock-name{flex:1;font-size:0.82rem;font-weight:700;}
+.stock-price{font-size:0.82rem;color:var(--gold);}
+.stock-chg{font-size:0.75rem;width:52px;text-align:right;}
+.stock-chg.up{color:var(--green)}.stock-chg.down{color:var(--red);}
+.stock-input{width:52px;background:rgba(0,0,0,0.3);border:1px solid var(--border);color:#fff;border-radius:6px;padding:4px 5px;font-size:0.72rem;}
+.smb{padding:4px 9px;border-radius:5px;border:none;font-size:0.7rem;font-weight:700;cursor:pointer;}
+.smb.buy{background:rgba(74,222,128,0.18);color:var(--green);}
+.smb.sell{background:rgba(248,113,113,0.18);color:var(--red);margin-left:3px;}
+
+.prestige-box{background:linear-gradient(135deg,rgba(167,139,250,0.1),rgba(124,58,237,0.04));border:1px solid rgba(167,139,250,0.25);border-radius:16px;padding:22px;text-align:center;margin-bottom:18px;}
+.prestige-box h2{font-size:1.4rem;color:var(--purple);margin-bottom:8px;}
+.prestige-box p{font-size:0.82rem;opacity:0.65;line-height:1.6;margin-bottom:14px;}
+.prestige-reward{font-size:1.1rem;color:var(--gold);font-weight:700;margin-bottom:18px;}
+.perk-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.perk-card{background:rgba(167,139,250,0.07);border:1px solid rgba(167,139,250,0.18);border-radius:10px;padding:10px;}
+.perk-name{font-size:0.82rem;font-weight:700;color:var(--purple);}
+.perk-desc{font-size:0.7rem;opacity:0.55;margin-top:3px;}
+.perk-lvl{font-size:0.68rem;color:var(--gold);margin-top:5px;}
+
+.info-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.8rem;}
+.info-row span:last-child{color:var(--gold);font-weight:700;}
+.sect{margin-bottom:20px;}
+.sect-title{font-size:0.9rem;font-weight:700;margin-bottom:10px;color:#bbb;border-bottom:1px solid var(--border);padding-bottom:5px;}
+
+/* Event banner */
+#event-banner{position:fixed;top:120px;left:50%;transform:translateX(-50%);background:rgba(10,10,20,0.97);border:1px solid rgba(255,215,0,0.4);border-radius:14px;padding:11px 26px;font-size:0.9rem;font-weight:700;text-align:center;z-index:200;display:none;box-shadow:0 8px 30px rgba(0,0,0,0.6);animation:popIn 0.3s;}
+@keyframes popIn{from{transform:translateX(-50%) scale(0.8);opacity:0}to{transform:translateX(-50%) scale(1);opacity:1}}
+
+/* Float & Toast */
+.float-num{position:fixed;font-size:1.3rem;font-weight:700;color:var(--gold);pointer-events:none;animation:floatUp 0.9s ease-out forwards;text-shadow:0 2px 8px rgba(0,0,0,0.8);z-index:9999;}
+@keyframes floatUp{to{opacity:0;transform:translateY(-80px) scale(0.8);}}
+.toast{position:fixed;bottom:18px;right:18px;background:rgba(10,10,20,0.97);border-left:4px solid var(--green);border-radius:10px;padding:11px 18px;font-size:0.82rem;animation:slideIn 0.3s,fadeOut 0.4s 2.5s forwards;z-index:999;box-shadow:0 6px 20px rgba(0,0,0,0.5);max-width:270px;}
+@keyframes slideIn{from{transform:translateX(300px);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes fadeOut{to{opacity:0;transform:translateY(8px);}}
+
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:10px;}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div id="topbar">
+  <h1>💼 Business Empire</h1>
+  <div class="top-stat"><label>Cash</label><span id="tb-cash">$0</span></div>
+  <div class="top-stat"><label>Per Sec</label><span id="tb-ps">$0</span></div>
+  <div class="top-stat"><label>Net Worth</label><span id="tb-nw">$0</span></div>
+  <div class="top-stat"><label>Stars ⭐</label><span id="tb-pr">0</span></div>
+  <button id="prestige-btn" onclick="tryPrestige()" disabled>⭐ Prestige</button>
+</div>
+
+<!-- MODE SWITCHER -->
+<div id="mode-bar">
+  <button class="mode-tab active" onclick="switchMode('click',this)">🖱️ Clicking</button>
+  <button class="mode-tab" onclick="switchMode('biz',this)">🏪 Business Empire</button>
+</div>
+
+<!-- ══════════════ CLICK MODE ══════════════ -->
+<div id="click-mode" class="active">
+  <div class="click-arena">
+    <h2>Tap to earn cash!</h2>
+    <button id="mainClickBtn" onclick="doClick(event)">💸</button>
+    <div style="width:100%;max-width:340px;">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+        <span class="combo-label">🔥 Combo: <span id="combo-count">0x</span></span>
+        <span style="font-size:0.8rem;opacity:0.5;">Fades if you stop clicking</span>
+      </div>
+      <div class="combo-bar"><div class="combo-fill" id="combo-fill"></div></div>
+    </div>
+    <div class="click-stats-row">
+      <div class="cstat"><label>Per Click</label><span id="c-power">$1</span></div>
+      <div class="cstat"><label>Total Clicks</label><span id="c-clicks">0</span></div>
+      <div class="cstat"><label>Click Earned</label><span id="c-earned">$0</span></div>
+    </div>
+    <div class="click-stats-row">
+      <div class="cstat"><label>Best Combo</label><span id="c-bestcombo">0x</span></div>
+      <div class="cstat"><label>Crit Chance</label><span id="c-crit">5%</span></div>
+      <div class="cstat"><label>Auto Click/s</label><span id="c-auto">0</span></div>
+    </div>
+  </div>
+
+  <!-- Click Upgrades -->
+  <div class="click-upg-panel">
+    <h3>⚡ Click Upgrades</h3>
+    <div id="click-upg-list"></div>
+  </div>
+</div>
+
+<!-- ══════════════ BUSINESS MODE ══════════════ -->
+<div id="biz-mode">
+  <!-- Sidebar -->
+  <div id="biz-sidebar">
+    <button class="nav-btn active" onclick="bizNav('businesses',this)"><span class="nav-icon">🏪</span>Businesses</button>
+    <button class="nav-btn" onclick="bizNav('upgrades',this)"><span class="nav-icon">⚡</span>Upgrades</button>
+    <button class="nav-btn" onclick="bizNav('employees',this)"><span class="nav-icon">👥</span>Employees</button>
+    <button class="nav-btn" onclick="bizNav('stocks',this)"><span class="nav-icon">📈</span>Stocks</button>
+    <button class="nav-btn" onclick="bizNav('prestige',this)"><span class="nav-icon">⭐</span>Prestige</button>
+    <button class="nav-btn" onclick="bizNav('stats',this)"><span class="nav-icon">📊</span>Stats</button>
+    <hr style="border-color:var(--border);margin:6px 0;">
+    <button class="nav-btn" onclick="resetGame()" style="color:var(--red);"><span class="nav-icon">🗑️</span>Reset</button>
+  </div>
+
+  <!-- Main content -->
+  <div id="biz-main">
+    <div class="page active" id="page-businesses">
+      <div class="page-title">🏪 Your Businesses</div>
+      <div class="page-sub">Collect revenue manually or hire managers to automate.</div>
+      <div class="biz-grid" id="biz-grid"></div>
+    </div>
+    <div class="page" id="page-upgrades">
+      <div class="page-title">⚡ Upgrades</div>
+      <div class="page-sub">Permanent boosts for all businesses.</div>
+      <div class="upg-grid" id="upg-grid"></div>
+    </div>
+    <div class="page" id="page-employees">
+      <div class="page-title">👥 Employees</div>
+      <div class="page-sub">Hire specialists to double business income.</div>
+      <div id="emp-list"></div>
+    </div>
+    <div class="page" id="page-stocks">
+      <div class="page-title">📈 Stock Market</div>
+      <div class="page-sub">Buy low, sell high. Events shake everything up.</div>
+      <div id="stock-portfolio"></div>
+      <div id="stock-list"></div>
+    </div>
+    <div class="page" id="page-prestige">
+      <div class="page-title">⭐ Prestige</div>
+      <div class="page-sub">Reset your empire for permanent star bonuses.</div>
+      <div class="prestige-box">
+        <h2>⭐ Prestige Reset</h2>
+        <p>Earn <strong>Prestige Stars</strong> that permanently multiply your income, speed up timers, and give starting cash.</p>
+        <div class="prestige-reward" id="prestige-preview">You would earn 0 ⭐</div>
+        <button class="btn btn-buy" style="padding:11px 30px;font-size:0.95rem;" onclick="tryPrestige()">⭐ Prestige Now</button>
+      </div>
+      <div class="perk-grid" id="perk-grid"></div>
+    </div>
+    <div class="page" id="page-stats">
+      <div class="page-title">📊 Statistics</div>
+      <div class="page-sub">Your empire's full lifetime record.</div>
+      <div class="sect">
+        <div class="sect-title">💰 Financials</div>
+        <div class="info-row"><span>Total Earned</span><span id="stat-total">$0</span></div>
+        <div class="info-row"><span>Total Spent</span><span id="stat-spent">$0</span></div>
+        <div class="info-row"><span>Click Earned</span><span id="stat-click-earned">$0</span></div>
+        <div class="info-row"><span>Income/sec</span><span id="stat-ps">$0/s</span></div>
+        <div class="info-row"><span>Net Worth</span><span id="stat-nw">$0</span></div>
+      </div>
+      <div class="sect">
+        <div class="sect-title">🖱️ Clicking</div>
+        <div class="info-row"><span>Total Clicks</span><span id="stat-clicks">0</span></div>
+        <div class="info-row"><span>Best Combo</span><span id="stat-combo">0x</span></div>
+        <div class="info-row"><span>Click Power</span><span id="stat-cp">$1</span></div>
+      </div>
+      <div class="sect">
+        <div class="sect-title">🏪 Business</div>
+        <div class="info-row"><span>Businesses Active</span><span id="stat-biz">0</span></div>
+        <div class="info-row"><span>Managers Hired</span><span id="stat-mgr">0</span></div>
+        <div class="info-row"><span>Employees Hired</span><span id="stat-emp">0</span></div>
+        <div class="info-row"><span>Upgrades Bought</span><span id="stat-upg">0</span></div>
+      </div>
+      <div class="sect">
+        <div class="sect-title">⭐ Prestige</div>
+        <div class="info-row"><span>Prestige Count</span><span id="stat-prc">0</span></div>
+        <div class="info-row"><span>Total Stars</span><span id="stat-stars">0⭐</span></div>
+        <div class="info-row"><span>Global Multiplier</span><span id="stat-mult">x1.00</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right panel -->
+  <div id="biz-right">
+    <div class="rp-title">📰 Market News</div>
+    <div id="newsticker">Loading...</div>
+    <div class="rp-title">📊 Revenue Chart</div>
+    <div id="minichart"></div>
+    <div class="rp-title">🏆 Achievements</div>
+    <div id="ach-list"></div>
+  </div>
+</div>
+
+<div id="event-banner"></div>
+
+<script>
+// ══════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════
+const CLICK_UPGRADES = [
+  {id:'cu1', name:'Better Grip',        icon:'🖱️', cost:50,      power:1,   autoClick:0, critMult:0, desc:'+$1 per click',         owned:0, max:Infinity},
+  {id:'cu2', name:'Double Tap',         icon:'⚡', cost:200,     power:3,   autoClick:0, critMult:0, desc:'+$3 per click',          owned:0, max:Infinity},
+  {id:'cu3', name:'Coin Magnet',        icon:'🧲', cost:500,     power:0,   autoClick:0, critMult:0.05, desc:'+5% crit chance',     owned:0, max:5},
+  {id:'cu4', name:'Auto Tapper',        icon:'🤖', cost:1000,    power:0,   autoClick:1, critMult:0, desc:'+1 auto click/sec',      owned:0, max:10},
+  {id:'cu5', name:'Power Gloves',       icon:'🥊', cost:2500,    power:10,  autoClick:0, critMult:0, desc:'+$10 per click',         owned:0, max:Infinity},
+  {id:'cu6', name:'Lucky Charm',        icon:'🍀', cost:5000,    power:0,   autoClick:0, critMult:0.1, desc:'+10% crit chance',     owned:0, max:3},
+  {id:'cu7', name:'Click Multiplier',   icon:'✖️', cost:10000,   power:0,   autoClick:0, critMult:0, desc:'x2 all click power',     owned:0, max:1, mult:2},
+  {id:'cu8', name:'Turbo Tapper',       icon:'🚀', cost:25000,   power:50,  autoClick:3, critMult:0, desc:'+$50 click, +3 auto/s',  owned:0, max:Infinity},
+  {id:'cu9', name:'Golden Fingers',     icon:'👑', cost:100000,  power:200, autoClick:0, critMult:0.15, desc:'+$200/click, +15% crit',owned:0,max:1},
+  {id:'cu10',name:'Click Empire',       icon:'💎', cost:500000,  power:0,   autoClick:0, critMult:0, desc:'x5 all click power',     owned:0, max:1, mult:5},
+];
+
+const BIZ_DATA = [
+  {id:'lemon',  name:'Lemonade Stand', icon:'🍋', color:'#facc15', baseCost:10,    baseInc:0.1,   baseTime:1,   unlockAt:0},
+  {id:'pizza',  name:'Pizza Slice',    icon:'🍕', color:'#f97316', baseCost:100,   baseInc:0.8,   baseTime:3,   unlockAt:10},
+  {id:'cafe',   name:'Coffee Café',    icon:'☕', color:'#92400e', baseCost:500,   baseInc:4,     baseTime:6,   unlockAt:25},
+  {id:'laundry',name:'Laundromat',     icon:'🧺', color:'#60a5fa', baseCost:2000,  baseInc:20,    baseTime:12,  unlockAt:50},
+  {id:'cinema', name:'Cinema',         icon:'🎬', color:'#c026d3', baseCost:10000, baseInc:120,   baseTime:30,  unlockAt:100},
+  {id:'hotel',  name:'Hotel',          icon:'🏨', color:'#0ea5e9', baseCost:50000, baseInc:700,   baseTime:60,  unlockAt:250},
+  {id:'casino', name:'Casino',         icon:'🎰', color:'#f43f5e', baseCost:250000,baseInc:4000,  baseTime:120, unlockAt:500},
+  {id:'bank',   name:'Inv. Bank',      icon:'🏦', color:'#22c55e', baseCost:1e6,   baseInc:25000, baseTime:300, unlockAt:1000},
+  {id:'tech',   name:'Tech Co.',       icon:'💻', color:'#818cf8', baseCost:5e6,   baseInc:150000,baseTime:600, unlockAt:2500},
+  {id:'empire', name:'Global Empire',  icon:'🌍', color:'#ffd700', baseCost:25e6,  baseInc:1e6,   baseTime:1800,unlockAt:10000},
+];
+
+const BIZ_UPGRADES = [
+  {id:'u1',name:'Better Marketing',  icon:'📣',cost:500,   desc:'All income x1.5', eff:()=>{G.incMult*=1.5;}, bought:false},
+  {id:'u2',name:'Automation Tools',  icon:'🤖',cost:2000,  desc:'Timers 20% faster',eff:()=>{G.speedMult*=1.2;},bought:false},
+  {id:'u3',name:'Premium Location',  icon:'📍',cost:5000,  desc:'All income x2',   eff:()=>{G.incMult*=2;},   bought:false},
+  {id:'u4',name:'Brand Recognition', icon:'⭐',cost:20000, desc:'All income x2.5', eff:()=>{G.incMult*=2.5;}, bought:false},
+  {id:'u5',name:'Smart Logistics',   icon:'🚚',cost:50000, desc:'Timers 50% faster',eff:()=>{G.speedMult*=1.5;},bought:false},
+  {id:'u6',name:'Global Expansion',  icon:'🌍',cost:200000,desc:'All income x5',   eff:()=>{G.incMult*=5;},   bought:false},
+  {id:'u7',name:'AI Management',     icon:'🧠',cost:1e6,   desc:'All income x10',  eff:()=>{G.incMult*=10;},  bought:false},
+  {id:'u8',name:'Monopoly Power',    icon:'👑',cost:10e6,  desc:'All income x25',  eff:()=>{G.incMult*=25;},  bought:false},
+];
+
+const EMP_DATA = [
+  {id:'e1',name:'Alex Sales',   avatar:'🧑‍💼',role:'Sales Manager',    cost:1000,  bizId:'lemon',  desc:'+100% Lemonade income'},
+  {id:'e2',name:'Maria Cook',   avatar:'👩‍🍳',role:'Head Chef',         cost:3000,  bizId:'pizza',  desc:'+100% Pizza income'},
+  {id:'e3',name:'Jake Barista', avatar:'🧑‍🍳',role:'Master Barista',    cost:8000,  bizId:'cafe',   desc:'+100% Café income'},
+  {id:'e4',name:'Lisa Tech',    avatar:'👩‍💻',role:'Tech Lead',         cost:20000, bizId:'laundry',desc:'+150% Laundromat'},
+  {id:'e5',name:'Mr. Director', avatar:'🎩',role:'Film Director',      cost:50000, bizId:'cinema', desc:'+200% Cinema income'},
+  {id:'e6',name:'Hotel Queen',  avatar:'👸',role:'Hotel Manager',      cost:200000,bizId:'hotel',  desc:'+200% Hotel income'},
+  {id:'e7',name:'Lucky Lou',    avatar:'🎲',role:'Casino Dealer',      cost:500000,bizId:'casino', desc:'+300% Casino income'},
+  {id:'e8',name:'Wolf Banker',  avatar:'🐺',role:'Investment Analyst', cost:2e6,   bizId:'bank',   desc:'+300% Bank income'},
+];
+
+const STOCK_DATA = [
+  {id:'s1',name:'TechCorp',  sym:'TCH',color:'#818cf8',basePrice:50, vol:0.04},
+  {id:'s2',name:'FoodChain', sym:'FDC',color:'#f97316',basePrice:30, vol:0.05},
+  {id:'s3',name:'RealEstate',sym:'RLE',color:'#22c55e',basePrice:120,vol:0.03},
+  {id:'s4',name:'EnergyCo',  sym:'ENC',color:'#facc15',basePrice:80, vol:0.06},
+  {id:'s5',name:'MediaGiant',sym:'MDG',color:'#c026d3',basePrice:200,vol:0.035},
+];
+
+const ACH_DATA = [
+  {id:'a1',icon:'🍋',name:'First Steps',    desc:'Collect your first dollar',      check:()=>G.totalEarned>0},
+  {id:'a2',icon:'💰',name:'Millionaire',    desc:'Reach $1M net worth',            check:()=>netWorth()>=1e6},
+  {id:'a3',icon:'🚀',name:'Rocket Growth', desc:'Earn $1,000/sec',                check:()=>G.totalPS>=1000},
+  {id:'a4',icon:'🖱️',name:'Click Fanatic',  desc:'Click 1,000 times',             check:()=>G.totalClicks>=1000},
+  {id:'a5',icon:'🔥',name:'Combo King',    desc:'Hit a 50x click combo',          check:()=>G.bestCombo>=50},
+  {id:'a6',icon:'⭐',name:'First Prestige', desc:'Prestige for the first time',   check:()=>G.prestigeCount>=1},
+  {id:'a7',icon:'💼',name:'Full Workforce', desc:'Hire 5 employees',              check:()=>G.hiredEmps.length>=5},
+  {id:'a8',icon:'🏦',name:'Billionaire',   desc:'Reach $1B net worth',            check:()=>netWorth()>=1e9},
+];
+
+const MARKET_EVENTS = [
+  {msg:'🚀 BULL MARKET! All stocks +40%!', col:'rgba(74,222,128,0.15)', fn:s=>s.price*=1.4},
+  {msg:'💥 CRASH! Stock prices halved!',  col:'rgba(248,113,113,0.15)',fn:s=>s.price*=0.55},
+  {msg:'☕ Coffee Craze! Café x3!',       col:'rgba(146,64,14,0.2)',  biz:'cafe', mult:3,dur:20},
+  {msg:'🍕 Pizza Viral! Pizza x4!',       col:'rgba(249,115,22,0.2)',  biz:'pizza',mult:4,dur:20},
+  {msg:'🎰 Jackpot Night! Casino x5!',    col:'rgba(244,63,94,0.2)',   biz:'casino',mult:5,dur:15},
+  {msg:'🖱️ Click Frenzy! x3 click power!',col:'rgba(240,93,251,0.2)', clickMult:3,dur:10},
+];
+
+const NEWS = [
+  '📈 Markets surge on strong earnings!','🚀 Tech leads morning gains.',
+  '☕ Coffee prices spike globally.','🎬 Cinema attendance breaks record.',
+  '🏨 Hotel occupancy at 5-year high.','🎰 Casino revenues beat forecasts.',
+  '🏦 Interest rates hold — banks profit.','🌍 Global trade deal boosts outlook.',
+  '🍕 Fast food stocks outperform market.','🤖 AI accelerates business automation.',
+  '📉 Inflation fears hit consumer stocks.','💡 Renewable energy stocks soar.',
+];
+
+const PRESTIGE_PERKS = [
+  {name:'Income Boost',  desc:'Each star = +25% global income',  icon:'💰'},
+  {name:'Speed Boost',   desc:'Each star = +10% faster timers',  icon:'⚡'},
+  {name:'Start Capital', desc:'Each star = +$500 starting cash', icon:'🏦'},
+  {name:'Click Boost',   desc:'Each star = +$1 base click power',icon:'🖱️'},
+];
+
+// ══════════════════════════════════════════
+// GAME STATE
+// ══════════════════════════════════════════
+let G = {
+  cash:100, totalEarned:0, totalSpent:0, totalPS:0,
+  incMult:1, speedMult:1,
+  prestigeCount:0, prestigeStars:0, totalStars:0,
+  // Click
+  clickPower:1, totalClicks:0, clickEarned:0, bestCombo:0,
+  combo:0, critChance:0.05, autoClickRate:0, clickMult:1,
+  clickUpgBought:{},
+  // Biz
+  hiredEmps:[], hiredMgrs:{}, upgBoughtIds:new Set(),
+  biz:{}, eventMults:{}, clickEventMult:1, clickEventExp:0,
+  // Stocks
+  stockHoldings:{},
+  achUnlocked:new Set(),
+  revenueHistory:[],
+};
+
+STOCK_DATA.forEach(s=>{s.price=s.basePrice;s.history=[s.basePrice];G.stockHoldings[s.id]=0;});
+BIZ_DATA.forEach(b=>{G.biz[b.id]={level:0,progress:0};});
+
+// ══════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════
+const PRESTIGE_MULT = ()=>1+G.prestigeStars*0.25;
+const SPEED_MULT    = ()=>G.speedMult*(1+G.prestigeStars*0.1);
+function netWorth(){return G.cash+STOCK_DATA.reduce((s,st)=>s+G.stockHoldings[st.id]*st.price,0);}
+
+function bizIncome(d){
+  const st=G.biz[d.id];
+  if(!st||st.level===0) return 0;
+  let inc=d.baseInc*Math.pow(1.15,st.level-1)*G.incMult*PRESTIGE_MULT();
+  if(G.hiredEmps.some(eid=>EMP_DATA.find(e=>e.id===eid)?.bizId===d.id)) inc*=2;
+  const ev=G.eventMults[d.id];
+  if(ev&&Date.now()<ev.expires) inc*=ev.mult;
+  return inc;
+}
+function bizTime(d){return d.baseTime/SPEED_MULT();}
+function bizCost(d){return d.baseCost*Math.pow(1.12,G.biz[d.id].level);}
+function calcPS(){return BIZ_DATA.reduce((s,d)=>{const st=G.biz[d.id];return(!st||st.level===0||!G.hiredMgrs[d.id])?s:s+bizIncome(d)/bizTime(d);},0);}
+
+function fmt(n){
+  if(n>=1e12) return '$'+(n/1e12).toFixed(2)+'T';
+  if(n>=1e9)  return '$'+(n/1e9).toFixed(2)+'B';
+  if(n>=1e6)  return '$'+(n/1e6).toFixed(2)+'M';
+  if(n>=1e3)  return '$'+(n/1e3).toFixed(2)+'K';
+  return '$'+n.toFixed(2);
+}
+
+// ══════════════════════════════════════════
+// MODE SWITCHING
+// ══════════════════════════════════════════
+function switchMode(mode, el){
+  document.querySelectorAll('.mode-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('click-mode').classList.toggle('active', mode==='click');
+  document.getElementById('biz-mode').classList.toggle('active', mode==='biz');
+  if(mode==='biz') renderBiz();
+}
+
+// ══════════════════════════════════════════
+// CLICKING
+// ══════════════════════════════════════════
+let comboTimer=null;
+function doClick(e){
+  G.totalClicks++;
+  G.combo++;
+  if(G.combo>G.bestCombo) G.bestCombo=G.combo;
+  clearTimeout(comboTimer);
+  comboTimer=setTimeout(()=>{G.combo=0;updateClickUI();},2000);
+
+  const isCrit = Math.random()<G.critChance;
+  const comboBonus = 1 + Math.floor(G.combo/10)*0.25;
+  const clickMult  = Date.now()<G.clickEventExp ? G.clickEventMult : 1;
+  const base = (G.clickPower+G.prestigeStars)*G.clickMult*clickMult;
+  const amt  = isCrit ? base*3*comboBonus : base*comboBonus;
+
+  G.cash += amt;
+  G.totalEarned += amt;
+  G.clickEarned += amt;
+
+  const btn = document.getElementById('mainClickBtn');
+  const r   = btn.getBoundingClientRect();
+  floatNum(r.left+r.width/2, r.top, `${isCrit?'💥CRIT! ':''}${fmt(amt)}`, isCrit?'#f093fb':null);
+
+  updateClickUI();
+  updateTopBar();
+}
+
+// Auto clicker tick
+setInterval(()=>{
+  if(G.autoClickRate<=0) return;
+  const base = (G.clickPower+G.prestigeStars)*G.clickMult;
+  const amt  = base*G.autoClickRate*0.1;
+  G.cash += amt;
+  G.totalEarned += amt;
+  G.clickEarned += amt;
+  updateTopBar();
+},100);
+
+function updateClickUI(){
+  document.getElementById('c-power').textContent   = fmt((G.clickPower+G.prestigeStars)*G.clickMult);
+  document.getElementById('c-clicks').textContent  = G.totalClicks.toLocaleString();
+  document.getElementById('c-earned').textContent  = fmt(G.clickEarned);
+  document.getElementById('c-bestcombo').textContent = G.bestCombo+'x';
+  document.getElementById('c-crit').textContent    = (G.critChance*100).toFixed(0)+'%';
+  document.getElementById('c-auto').textContent    = G.autoClickRate.toFixed(1);
+  document.getElementById('combo-count').textContent= G.combo+'x';
+  document.getElementById('combo-fill').style.width = Math.min(G.combo*2,100)+'%';
+  renderClickUpgrades();
+}
+
+function renderClickUpgrades(){
+  document.getElementById('click-upg-list').innerHTML = CLICK_UPGRADES.map(u=>{
+    const owned = G.clickUpgBought[u.id]||0;
+    const maxed = owned>=u.max;
+    const cost  = Math.floor(u.cost*Math.pow(1.4,owned));
+    const canBuy= G.cash>=cost && !maxed;
+    return `<div class="cupg-item ${maxed?'bought':''}" onclick="buyClickUpg('${u.id}')">
+      <div class="cupg-icon">${u.icon}</div>
+      <div class="cupg-info">
+        <div class="cupg-name">${u.name} ${owned>0?`<span style="color:var(--blue);font-size:0.7rem;">x${owned}</span>`:''}</div>
+        <div class="cupg-desc">${u.desc}</div>
+        <div class="cupg-cost">${maxed?'MAXED':fmt(cost)}</div>
+      </div>
+      ${u.max<Infinity?`<span class="cupg-badge">${owned}/${u.max}</span>`:''}
+    </div>`;
+  }).join('');
+}
+
+function buyClickUpg(id){
+  const u = CLICK_UPGRADES.find(x=>x.id===id);
+  const owned = G.clickUpgBought[id]||0;
+  if(owned>=u.max) return;
+  const cost = Math.floor(u.cost*Math.pow(1.4,owned));
+  if(G.cash<cost){toast('❌ Not enough cash!');return;}
+  G.cash -= cost;
+  G.totalSpent += cost;
+  G.clickUpgBought[id] = owned+1;
+  G.clickPower    += u.power;
+  G.autoClickRate += u.autoClick;
+  G.critChance    = Math.min(G.critChance+u.critMult, 0.75);
+  if(u.mult) G.clickMult *= u.mult;
+  toast(`${u.icon} ${u.name} purchased!`);
+  updateClickUI();
+  updateTopBar();
+}
+
+// ══════════════════════════════════════════
+// BUSINESS NAV
+// ══════════════════════════════════════════
+function bizNav(page,el){
+  document.querySelectorAll('#biz-main .page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('#biz-sidebar .nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  if(el) el.classList.add('active');
+  if(page==='stocks')  renderStocks();
+  if(page==='stats')   renderStats();
+  if(page==='prestige')renderPrestige();
+  if(page==='employees')renderEmployees();
+  if(page==='upgrades')renderBizUpgrades();
+}
+
+// ══════════════════════════════════════════
+// BUSINESSES
+// ══════════════════════════════════════════
+function renderBiz(){
+  document.getElementById('biz-grid').innerHTML = BIZ_DATA.map(d=>{
+    const st   = G.biz[d.id];
+    const cost = bizCost(d);
+    const canBuy = G.cash>=cost;
+    const locked = G.totalEarned<d.unlockAt && d.unlockAt>0 && st.level===0;
+    const inc  = bizIncome(d);
+    const time = bizTime(d);
+    const pct  = st.level>0 ? (st.progress/time)*100 : 0;
+    const hasMgr = G.hiredMgrs[d.id];
+    const ready  = st.level>0 && st.progress>=time;
+    const ev = G.eventMults[d.id];
+    const hasEv = ev && Date.now()<ev.expires;
+    return `<div class="biz-card${locked?' locked':''}" style="--accent:${d.color}">
+      ${st.level>0?`<div class="biz-lv-badge">Lv.${st.level}</div>`:''}
+      ${hasEv?`<div style="position:absolute;top:10px;left:10px;font-size:0.68rem;background:rgba(255,165,0,0.18);border:1px solid orange;border-radius:20px;padding:2px 8px;color:orange;">🔥 EVENT</div>`:''}
+      <div class="biz-top">
+        <div class="biz-icon">${d.icon}</div>
+        <div class="biz-info">
+          <div class="biz-name">${d.name}</div>
+          <div class="biz-level">${locked?`🔒 Unlock at $${d.unlockAt} earned`:st.level===0?'Not purchased':`Level ${st.level}`}</div>
+          ${st.level>0?`<div class="biz-income-text">💰 ${fmt(inc)} / ${time.toFixed(1)}s</div>`:''}
+        </div>
+      </div>
+      ${st.level>0?`<div class="biz-progress"><div class="biz-fill" style="width:${pct}%;background:${d.color}"></div></div>`:''}
+      <div class="biz-btns">
+        <button class="btn btn-buy" onclick="buyBiz('${d.id}')" ${(!canBuy||locked)?'disabled':''}>
+          ${locked?'🔒 Locked':st.level===0?`Buy (${fmt(cost)})`:`Upgrade (${fmt(cost)})`}
+        </button>
+        <button class="btn btn-mgr ${hasMgr?'hired':''}" onclick="buyManager('${d.id}')" title="${hasMgr?'Auto-managed':'Hire manager'}">
+          ${hasMgr?'✅ Mgr':'👔 Mgr'}
+        </button>
+        <div class="collect-btn ${hasMgr?'auto':''}" id="cb-${d.id}" title="${hasMgr?'Auto-collecting':'Click to collect!'}">
+          ${hasMgr?'🤖':ready?'💰':'⏳'}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Attach collect clicks
+  BIZ_DATA.forEach(d=>{
+    const btn = document.getElementById('cb-'+d.id);
+    if(!btn || G.hiredMgrs[d.id]) return;
+    btn.onclick = ()=>{
+      const st=G.biz[d.id];
+      if(st.level===0||st.progress<bizTime(d)) return;
+      const earned=bizIncome(d);
+      G.cash+=earned; G.totalEarned+=earned;
+      st.progress=0;
+      const r=btn.getBoundingClientRect();
+      floatNum(r.left+r.width/2, r.top, fmt(earned));
+      updateTopBar(); renderBiz();
+    };
+  });
+}
+
+function buyBiz(id){
+  const d=BIZ_DATA.find(x=>x.id===id);
+  const cost=bizCost(d);
+  if(G.cash<cost) return;
+  G.cash-=cost; G.totalSpent+=cost;
+  G.biz[id].level++;
+  toast(`${d.icon} ${d.name} upgraded to Lv.${G.biz[id].level}!`);
+  updateTopBar(); renderBiz();
+}
+
+function buyManager(id){
+  const d=BIZ_DATA.find(x=>x.id===id);
+  if(G.hiredMgrs[id]||G.biz[id].level===0) return;
+  const cost=d.baseCost*10;
+  if(G.cash<cost){toast('❌ Need more cash for manager!');return;}
+  G.cash-=cost; G.totalSpent+=cost;
+  G.hiredMgrs[id]=true;
+  toast(`👔 Manager hired for ${d.name}!`);
+  updateTopBar(); renderBiz();
+}
+
+// ══════════════════════════════════════════
+// BIZ UPGRADES
+// ══════════════════════════════════════════
+function renderBizUpgrades(){
+  document.getElementById('upg-grid').innerHTML = BIZ_UPGRADES.map(u=>{
+    const bought=G.upgBoughtIds.has(u.id);
+    return `<div class="upg-card ${bought?'bought':''}" onclick="buyBizUpgrade('${u.id}')">
+      <div class="upg-card-icon">${u.icon}</div>
+      <div class="upg-card-name">${u.name}${bought?' ✅':''}</div>
+      <div class="upg-card-desc">${u.desc}</div>
+      <div class="upg-card-cost">${bought?'Purchased':fmt(u.cost)}</div>
+    </div>`;
+  }).join('');
+}
+
+function buyBizUpgrade(id){
+  const u=BIZ_UPGRADES.find(x=>x.id===id);
+  if(!u||G.upgBoughtIds.has(id)) return;
+  if(G.cash<u.cost){toast('❌ Not enough cash!');return;}
+  G.cash-=u.cost; G.totalSpent+=u.cost;
+  G.upgBoughtIds.add(id); u.eff();
+  toast(`⚡ ${u.name} purchased!`);
+  updateTopBar(); renderBizUpgrades(); renderBiz();
+}
+
+// ══════════════════════════════════════════
+// EMPLOYEES
+// ══════════════════════════════════════════
+function renderEmployees(){
+  document.getElementById('emp-list').innerHTML = EMP_DATA.map(e=>{
+    const hired=G.hiredEmps.includes(e.id);
+    return `<div class="emp-card">
+      <div class="emp-avatar">${e.avatar}</div>
+      <div class="emp-info">
+        <div class="emp-name">${e.name}</div>
+        <div class="emp-role">${e.role}</div>
+        <div class="emp-boost">${e.desc}</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:0.72rem;color:var(--gold);margin-bottom:5px;">${fmt(e.cost)}</div>
+        <button class="emp-hire ${hired?'hired':''}" onclick="hireEmployee('${e.id}')">${hired?'✅ Hired':'Hire'}</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function hireEmployee(id){
+  const e=EMP_DATA.find(x=>x.id===id);
+  if(G.hiredEmps.includes(id)) return;
+  if(G.cash<e.cost){toast('❌ Not enough cash!');return;}
+  G.cash-=e.cost; G.totalSpent+=e.cost;
+  G.hiredEmps.push(id);
+  toast(`${e.avatar} ${e.name} hired!`);
+  updateTopBar(); renderEmployees(); renderBiz();
+}
+
+// ══════════════════════════════════════════
+// STOCKS
+// ══════════════════════════════════════════
+function renderStocks(){
+  const sv=STOCK_DATA.reduce((s,st)=>s+G.stockHoldings[st.id]*st.price,0);
+  document.getElementById('stock-portfolio').innerHTML=`
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:13px;margin-bottom:12px;">
+      <div style="font-size:0.72rem;opacity:0.4;margin-bottom:4px;">PORTFOLIO VALUE</div>
+      <div style="font-size:1.4rem;font-weight:700;color:var(--gold);">${fmt(sv)}</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:7px;margin-bottom:13px;">
+    ${STOCK_DATA.map(s=>{const h=G.stockHoldings[s.id];return h?`<div style="background:var(--card);border:1px solid ${s.color}44;border-radius:9px;padding:9px;">
+      <div style="font-size:0.7rem;color:${s.color};font-weight:700;">${s.sym}</div>
+      <div style="font-size:0.82rem;font-weight:700;">${h} shares</div>
+      <div style="font-size:0.72rem;color:var(--gold);">${fmt(h*s.price)}</div>
+    </div>`:'';}).join('')}
+    </div>`;
+  document.getElementById('stock-list').innerHTML=`<div class="sect-title">All Stocks</div>`+
+  STOCK_DATA.map(s=>{
+    const prev=s.history[s.history.length-2]||s.price;
+    const pct=((s.price-prev)/prev*100).toFixed(2);
+    const isUp=pct>=0;
+    return `<div class="stock-row" style="border-left:3px solid ${s.color}">
+      <div class="stock-name">${s.name}<div style="font-size:0.68rem;opacity:0.4;">${s.sym}</div></div>
+      <div><div class="stock-price">${fmt(s.price)}</div><div class="stock-chg ${isUp?'up':'down'}">${isUp?'▲':'▼'} ${Math.abs(pct)}%</div></div>
+      <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;">
+        <input type="number" id="si-${s.id}" class="stock-input" value="10" min="1">
+        <div><button class="smb buy" onclick="buyStock('${s.id}')">Buy</button><button class="smb sell" onclick="sellStock('${s.id}')">Sell</button></div>
+        <div style="font-size:0.65rem;opacity:0.45;">Own: ${G.stockHoldings[s.id]}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function buyStock(id){
+  const s=STOCK_DATA.find(x=>x.id===id);
+  const amt=parseInt(document.getElementById('si-'+id)?.value)||0;
+  if(amt<=0) return;
+  const cost=s.price*amt;
+  if(G.cash<cost){toast('❌ Not enough cash!');return;}
+  G.cash-=cost; G.totalSpent+=cost; G.stockHoldings[id]+=amt;
+  toast(`📈 Bought ${amt} ${s.sym}!`); updateTopBar(); renderStocks();
+}
+
+function sellStock(id){
+  const s=STOCK_DATA.find(x=>x.id===id);
+  const amt=parseInt(document.getElementById('si-'+id)?.value)||0;
+  if(amt<=0||G.stockHoldings[id]<amt){toast('❌ Not enough shares!');return;}
+  const gain=s.price*amt;
+  G.cash+=gain; G.totalEarned+=gain; G.stockHoldings[id]-=amt;
+  toast(`💰 Sold ${amt} ${s.sym} for ${fmt(gain)}!`); updateTopBar(); renderStocks();
+}
+
+// ══════════════════════════════════════════
+// PRESTIGE
+// ══════════════════════════════════════════
+function renderPrestige(){
+  const stars=Math.floor(Math.log10(Math.max(G.totalEarned,10)));
+  document.getElementById('prestige-preview').textContent=`You would earn ${stars} ⭐ star${stars!==1?'s':''}`;
+  document.getElementById('perk-grid').innerHTML=PRESTIGE_PERKS.map(p=>`
+    <div class="perk-card">
+      <div class="perk-name">${p.icon} ${p.name}</div>
+      <div class="perk-desc">${p.desc}</div>
+      <div class="perk-lvl">Stars: ${G.prestigeStars}⭐</div>
+    </div>`).join('');
+}
+
+function tryPrestige(){
+  const stars=Math.floor(Math.log10(Math.max(G.totalEarned,10)));
+  if(stars<1){toast('❌ Need more total earnings to prestige!');return;}
+  if(!confirm(`Prestige for ${stars} ⭐? Businesses reset, stars are kept.`)) return;
+  G.prestigeStars+=stars; G.totalStars+=stars; G.prestigeCount++;
+  G.cash=100+G.prestigeStars*500; G.totalEarned=0; G.totalSpent=0;
+  G.incMult=1; G.speedMult=1; G.hiredMgrs={}; G.hiredEmps=[];
+  G.upgBoughtIds=new Set(); G.eventMults={};
+  BIZ_DATA.forEach(b=>G.biz[b.id]={level:0,progress:0});
+  STOCK_DATA.forEach(s=>{s.price=s.basePrice;G.stockHoldings[s.id]=0;});
+  BIZ_UPGRADES.forEach(u=>u.bought=false);
+  toast(`⭐ Prestige! +${stars} stars! Mult: x${(1+G.prestigeStars*0.25).toFixed(2)}`);
+  updateTopBar(); renderBiz();
+}
+
+// ══════════════════════════════════════════
+// STATS
+// ══════════════════════════════════════════
+function renderStats(){
+  document.getElementById('stat-total').textContent  = fmt(G.totalEarned);
+  document.getElementById('stat-spent').textContent  = fmt(G.totalSpent);
+  document.getElementById('stat-click-earned').textContent = fmt(G.clickEarned);
+  document.getElementById('stat-ps').textContent     = fmt(G.totalPS)+'/s';
+  document.getElementById('stat-nw').textContent     = fmt(netWorth());
+  document.getElementById('stat-clicks').textContent = G.totalClicks.toLocaleString();
+  document.getElementById('stat-combo').textContent  = G.bestCombo+'x';
+  document.getElementById('stat-cp').textContent     = fmt((G.clickPower+G.prestigeStars)*G.clickMult);
+  document.getElementById('stat-biz').textContent    = BIZ_DATA.filter(b=>G.biz[b.id].level>0).length;
+  document.getElementById('stat-mgr').textContent    = Object.keys(G.hiredMgrs).length;
+  document.getElementById('stat-emp').textContent    = G.hiredEmps.length;
+  document.getElementById('stat-upg').textContent    = G.upgBoughtIds.size;
+  document.getElementById('stat-prc').textContent    = G.prestigeCount;
+  document.getElementById('stat-stars').textContent  = G.totalStars+'⭐';
+  document.getElementById('stat-mult').textContent   = 'x'+(1+G.prestigeStars*0.25).toFixed(2);
+}
+
+// ══════════════════════════════════════════
+// RIGHT PANEL
+// ══════════════════════════════════════════
+function renderAch(){
+  document.getElementById('ach-list').innerHTML=ACH_DATA.map(a=>{
+    const u=G.achUnlocked.has(a.id);
+    return `<div class="ach-item ${u?'unlocked':''}">
+      <div class="ach-icon">${a.icon}</div>
+      <div><div class="ach-name">${a.name}</div><div class="ach-desc">${u?a.desc:'???'}</div></div>
+    </div>`;
+  }).join('');
+}
+
+function renderMiniChart(){
+  const el=document.getElementById('minichart');
+  const hist=G.revenueHistory.slice(-30);
+  if(!hist.length){el.innerHTML='<div style="opacity:0.25;font-size:0.75rem;margin:auto;">No data yet</div>';return;}
+  const max=Math.max(...hist,1);
+  el.innerHTML=hist.map((v,i)=>{
+    const ht=Math.max(3,Math.round((v/max)*60));
+    const c=i===hist.length-1?'#ffd700':(v>=(hist[i-1]||v)?'#4ade80':'#f87171');
+    return `<div class="mc-bar" style="height:${ht}px;background:${c};opacity:${i===hist.length-1?1:0.6};flex:1;"></div>`;
+  }).join('');
+}
+
+let newsIdx=0;
+function rotateNews(){document.getElementById('newsticker').textContent=NEWS[newsIdx++%NEWS.length];}
+
+// ══════════════════════════════════════════
+// TOP BAR
+// ══════════════════════════════════════════
+function updateTopBar(){
+  const ps=calcPS(); G.totalPS=ps;
+  document.getElementById('tb-cash').textContent=fmt(G.cash);
+  document.getElementById('tb-ps').textContent=fmt(ps)+'/s';
+  document.getElementById('tb-nw').textContent=fmt(netWorth());
+  document.getElementById('tb-pr').textContent=G.prestigeStars+'⭐';
+  const stars=Math.floor(Math.log10(Math.max(G.totalEarned,10)));
+  const btn=document.getElementById('prestige-btn');
+  btn.disabled=stars<1;
+  btn.textContent=stars>=1?`⭐ Prestige (+${stars}⭐)`:'⭐ Prestige';
+}
+
+// ══════════════════════════════════════════
+// MARKET EVENTS
+// ══════════════════════════════════════════
+function triggerEvent(){
+  const ev=MARKET_EVENTS[Math.floor(Math.random()*MARKET_EVENTS.length)];
+  if(ev.biz)        { G.eventMults[ev.biz]={mult:ev.mult,expires:Date.now()+ev.dur*1000}; }
+  else if(ev.clickMult){ G.clickEventMult=ev.clickMult; G.clickEventExp=Date.now()+ev.dur*1000; }
+  else              { STOCK_DATA.forEach(ev.fn); }
+  const banner=document.getElementById('event-banner');
+  banner.textContent=ev.msg; banner.style.background=ev.col||'rgba(10,10,20,0.97)';
+  banner.style.display='block';
+  setTimeout(()=>banner.style.display='none',6000);
+}
+
+// ══════════════════════════════════════════
+// GAME LOOP
+// ══════════════════════════════════════════
+let lastTick=Date.now();
+function gameTick(){
+  const now=Date.now(), dt=(now-lastTick)/1000; lastTick=now;
+  BIZ_DATA.forEach(d=>{
+    const st=G.biz[d.id];
+    if(!st||st.level===0) return;
+    st.progress=Math.min(st.progress+dt, bizTime(d));
+    if(st.progress>=bizTime(d)&&G.hiredMgrs[d.id]){
+      const e=bizIncome(d); G.cash+=e; G.totalEarned+=e; st.progress=0;
+    }
+  });
+  if(Math.random()<0.033){
+    G.revenueHistory.push(calcPS());
+    if(G.revenueHistory.length>60) G.revenueHistory.shift();
+    renderMiniChart();
+  }
+  if(Math.random()<0.016){
+    STOCK_DATA.forEach(s=>{
+      s.price=Math.max(s.price*(1+(Math.random()-0.48)*s.vol),s.basePrice*0.05);
+      s.history.push(s.price);
+      if(s.history.length>50) s.history.shift();
+    });
+  }
+  ACH_DATA.forEach(a=>{
+    if(!G.achUnlocked.has(a.id)&&a.check()){
+      G.achUnlocked.add(a.id);
+      toast(`🏆 Achievement: ${a.name}!`);
+      renderAch();
+    }
+  });
+  updateTopBar();
+  if(document.getElementById('page-businesses').classList.contains('active')&&
+     document.getElementById('biz-mode').classList.contains('active')) renderBiz();
+}
+
+// ══════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════
+function floatNum(x,y,txt,color){
+  const d=document.createElement('div');
+  d.className='float-num';
+  d.textContent=txt;
+  if(color) d.style.color=color;
+  d.style.left=x+'px'; d.style.top=y+'px';
+  document.body.appendChild(d);
+  setTimeout(()=>d.remove(),900);
+}
+function toast(msg){
+  const d=document.createElement('div');
+  d.className='toast'; d.textContent=msg;
+  document.body.appendChild(d);
+  setTimeout(()=>d.remove(),3000);
+}
+
+// ══════════════════════════════════════════
+// SAVE / LOAD
+// ══════════════════════════════════════════
+function saveGame(){
+  localStorage.setItem('bizEmpireV3',JSON.stringify({
+    G:{...G,upgBoughtIds:[...G.upgBoughtIds],achUnlocked:[...G.achUnlocked]},
+    stocks:STOCK_DATA.map(s=>({id:s.id,price:s.price,history:s.history})),
+    clickUpgs:CLICK_UPGRADES.map(u=>({id:u.id,owned:G.clickUpgBought[u.id]||0}))
+  }));
+}
+
+function loadGame(){
+  const raw=localStorage.getItem('bizEmpireV3');
+  if(!raw) return;
+  try{
+    const {G:sv,stocks,clickUpgs}=JSON.parse(raw);
+    Object.assign(G,sv);
+    G.upgBoughtIds=new Set(sv.upgBoughtIds||[]);
+    G.achUnlocked=new Set(sv.achUnlocked||[]);
+    stocks?.forEach(s=>{const st=STOCK_DATA.find(x=>x.id===s.id);if(st){st.price=s.price;st.history=s.history;}});
+    // reapply biz upgrade effects
+    G.incMult=1; G.speedMult=1;
+    G.upgBoughtIds.forEach(id=>{const u=BIZ_UPGRADES.find(x=>x.id===id);if(u)u.eff();});
+    // reapply click upgrade effects
+    G.clickPower=1; G.autoClickRate=0; G.critChance=0.05; G.clickMult=1;
+    clickUpgs?.forEach(cu=>{
+      const u=CLICK_UPGRADES.find(x=>x.id===cu.id);
+      if(!u||!cu.owned) return;
+      G.clickUpgBought[u.id]=cu.owned;
+      G.clickPower    +=u.power*cu.owned;
+      G.autoClickRate +=u.autoClick*cu.owned;
+      G.critChance    =Math.min(G.critChance+u.critMult*cu.owned,0.75);
+      if(u.mult&&cu.owned>0) G.clickMult*=Math.pow(u.mult,cu.owned);
+    });
+  }catch(e){console.warn('Load failed',e);}
+}
+
+function resetGame(){
+  if(!confirm('Reset ALL progress?')) return;
+  localStorage.removeItem('bizEmpireV3');
+  location.reload();
+}
+
+// ══════════════════════════════════════════
+// BOOT
+// ══════════════════════════════════════════
+loadGame();
+renderBiz(); renderAch(); renderClickUpgrades(); updateTopBar(); updateClickUI();
+setInterval(gameTick,100);
+setInterval(saveGame,15000);
+setInterval(rotateNews,6000);
+setInterval(triggerEvent,40000);
+rotateNews();
+</script>
+
+</body>
+
+</html>
